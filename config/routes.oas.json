@@ -1,0 +1,1443 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Todo API",
+    "description": "A REST API for individual users to manage personal tasks organized into projects. Users create projects as logical groupings (such as \"Work\" or \"Home\"), then create, track, and complete tasks within those projects. Every task and project is scoped to the authenticated user.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Level 250, Inc.",
+      "url": "https://level250.com",
+      "email": "support@level250.com"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://todo-api.replit.app",
+      "description": "Production server"
+    }
+  ],
+  "security": [
+    {
+      "ApiKeyAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Tasks",
+      "description": "Create, view, update, complete, and delete individual to-do items."
+    },
+    {
+      "name": "Projects",
+      "description": "Create, view, update, and delete projects that group related tasks."
+    }
+  ],
+  "paths": {
+    "/tasks": {
+      "get": {
+        "tags": [
+          "Tasks"
+        ],
+        "summary": "List tasks",
+        "description": "Returns a paginated TaskCollection for the authenticated user. Supports filtering by projectId and by status (open, completed; comma-separated to match more than one), and supports sorting via sort/order and sparse fieldsets via fields. Use this endpoint to discover task IDs before calling any task-item operation.",
+        "operationId": "listTasks",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ProjectIdFilterParam"
+          },
+          {
+            "$ref": "#/components/parameters/TaskStatusFilterParam"
+          },
+          {
+            "$ref": "#/components/parameters/OffsetParam"
+          },
+          {
+            "$ref": "#/components/parameters/LimitParam"
+          },
+          {
+            "$ref": "#/components/parameters/TaskSortParam"
+          },
+          {
+            "$ref": "#/components/parameters/OrderParam"
+          },
+          {
+            "$ref": "#/components/parameters/FieldsParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A paginated collection of the authenticated user's tasks matching the given filters.",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskCollection"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorResponse"
+          }
+        },
+        "x-zuplo-route": {
+          "corsPolicy": "none",
+          "handler": {
+            "export": "urlForwardHandler",
+            "module": "$import(@zuplo/runtime)",
+            "options": {
+              "baseUrl": "https://todo-api.replit.app"
+            }
+          },
+          "policies": {
+            "inbound": [
+              "rate-limit-inbound"
+            ],
+            "outbound": [
+              "set-headers-outbound"
+            ]
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Tasks"
+        ],
+        "summary": "Create a task",
+        "description": "Creates a new task under the given project. Only title and projectId are required, so a task can be captured with a single field beyond its project. priority defaults to medium when omitted; status always starts as open. Returns the created Task with a Location header pointing to it.",
+        "operationId": "createTask",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The task was created successfully.",
+            "headers": {
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorResponse"
+          }
+        }
+      }
+    },
+    "/tasks/{taskId}": {
+      "get": {
+        "tags": [
+          "Tasks"
+        ],
+        "summary": "Get a task",
+        "description": "Returns the full representation of a single task belonging to the authenticated user, including its priority, status, due date, and the project it belongs to.",
+        "operationId": "getTask",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TaskIdParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The requested task.",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/TaskNotFoundResponse"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorResponse"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Tasks"
+        ],
+        "summary": "Replace a task",
+        "description": "Fully replaces a task, including marking it complete or reopening it by setting status. Every mutable field must be sent; fields omitted from the request body are cleared, not left unchanged. Setting status to completed does not delete or archive the task — it remains listed and can be reopened by sending status: open again. Returns the updated Task.",
+        "operationId": "updateTask",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TaskIdParam"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The task was replaced successfully.",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/TaskNotFoundResponse"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorResponse"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Tasks"
+        ],
+        "summary": "Delete a task",
+        "description": "Permanently deletes a single task. This does not affect the project it belonged to or any other task. There is no undo; the task's ID becomes invalid for all future requests.",
+        "operationId": "deleteTask",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TaskIdParam"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The task was deleted. The response has no body.",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/TaskNotFoundResponse"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorResponse"
+          }
+        }
+      }
+    },
+    "/projects": {
+      "get": {
+        "tags": [
+          "Projects"
+        ],
+        "summary": "List projects",
+        "description": "Returns a paginated ProjectCollection for the authenticated user. Supports sorting via sort/order and sparse fieldsets via fields. Use this endpoint to discover project IDs before calling any project-item operation or before creating a task.",
+        "operationId": "listProjects",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/OffsetParam"
+          },
+          {
+            "$ref": "#/components/parameters/LimitParam"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectSortParam"
+          },
+          {
+            "$ref": "#/components/parameters/OrderParam"
+          },
+          {
+            "$ref": "#/components/parameters/FieldsParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A paginated collection of the authenticated user's projects.",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectCollection"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorResponse"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Projects"
+        ],
+        "summary": "Create a project",
+        "description": "Creates a new project as a grouping for tasks, such as \"Work\" or \"Home\". Only name is required. Returns the created Project with a Location header pointing to it.",
+        "operationId": "createProject",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The project was created successfully.",
+            "headers": {
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorResponse"
+          }
+        }
+      }
+    },
+    "/projects/{projectId}": {
+      "get": {
+        "tags": [
+          "Projects"
+        ],
+        "summary": "Get a project",
+        "description": "Returns the full representation of a single project belonging to the authenticated user, including its name and description.",
+        "operationId": "getProject",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ProjectIdParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The requested project.",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProjectNotFoundResponse"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorResponse"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Projects"
+        ],
+        "summary": "Replace a project",
+        "description": "Fully replaces a project's name and description. Fields omitted from the request body are cleared, not left unchanged. This does not affect the project's tasks. Returns the updated Project.",
+        "operationId": "updateProject",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ProjectIdParam"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The project was replaced successfully.",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProjectNotFoundResponse"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorResponse"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Projects"
+        ],
+        "summary": "Delete a project",
+        "description": "Permanently deletes a project. To prevent accidental loss of tasks, a project that still contains one or more tasks cannot be deleted — delete or move its tasks first, then delete the project. There is no undo; the project's ID becomes invalid for all future requests.",
+        "operationId": "deleteProject",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ProjectIdParam"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The project was deleted. The response has no body.",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProjectNotFoundResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictResponse"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorResponse"
+          }
+        }
+      }
+    },
+    "/projects/{projectId}/tasks": {
+      "get": {
+        "tags": [
+          "Projects",
+          "Tasks"
+        ],
+        "summary": "List tasks in a project",
+        "description": "Returns a paginated TaskCollection scoped to the given project. Equivalent to GET /tasks?projectId={projectId} but reached through the project's own path. Supports sorting via sort/order and sparse fieldsets via fields. Returns 404 if the project itself does not exist.",
+        "operationId": "listProjectTasks",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ProjectIdParam"
+          },
+          {
+            "$ref": "#/components/parameters/OffsetParam"
+          },
+          {
+            "$ref": "#/components/parameters/LimitParam"
+          },
+          {
+            "$ref": "#/components/parameters/TaskSortParam"
+          },
+          {
+            "$ref": "#/components/parameters/OrderParam"
+          },
+          {
+            "$ref": "#/components/parameters/FieldsParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A paginated collection of the tasks belonging to the given project.",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskCollection"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProjectNotFoundResponse"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorResponse"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "API Key",
+        "description": "API key authentication. Send the key as a bearer token: `Authorization: Bearer <apiKey>`. Never send the key as a query parameter or in a proprietary X-Api-Key header."
+      }
+    },
+    "parameters": {
+      "TaskIdParam": {
+        "name": "taskId",
+        "in": "path",
+        "required": true,
+        "description": "The unique identifier of the task.",
+        "schema": {
+          "$ref": "#/components/schemas/TaskId"
+        },
+        "example": "018f4e3b-9d4c-7a1e-8f2b-3c4d5e6f7a8b"
+      },
+      "ProjectIdParam": {
+        "name": "projectId",
+        "in": "path",
+        "required": true,
+        "description": "The unique identifier of the project.",
+        "schema": {
+          "$ref": "#/components/schemas/ProjectId"
+        },
+        "example": "018f4e2a-7c2b-7c3e-8f1a-2b3c4d5e6f7a"
+      },
+      "ProjectIdFilterParam": {
+        "name": "projectId",
+        "in": "query",
+        "required": false,
+        "description": "Filter to tasks belonging to this project only. Matched case-insensitively like all query parameters.",
+        "schema": {
+          "$ref": "#/components/schemas/ProjectId"
+        },
+        "example": "018f4e2a-7c2b-7c3e-8f1a-2b3c4d5e6f7a"
+      },
+      "TaskStatusFilterParam": {
+        "name": "status",
+        "in": "query",
+        "required": false,
+        "description": "Filter to tasks with any of the given statuses. Accepts a comma-separated list, for example status=open,completed.",
+        "style": "form",
+        "explode": false,
+        "schema": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/TaskStatus"
+          }
+        },
+        "example": [
+          "open"
+        ]
+      },
+      "OffsetParam": {
+        "name": "offset",
+        "in": "query",
+        "required": false,
+        "description": "The number of items to skip before starting to return results, for offset-based pagination.",
+        "schema": {
+          "$ref": "#/components/schemas/Offset"
+        },
+        "example": 0
+      },
+      "LimitParam": {
+        "name": "limit",
+        "in": "query",
+        "required": false,
+        "description": "The maximum number of items to return. Requests above the maximum are clamped to it rather than rejected.",
+        "schema": {
+          "$ref": "#/components/schemas/Limit"
+        },
+        "example": 50
+      },
+      "TaskSortParam": {
+        "name": "sort",
+        "in": "query",
+        "required": false,
+        "description": "The task field to sort by. Defaults to createdAt.",
+        "schema": {
+          "$ref": "#/components/schemas/TaskSortField"
+        },
+        "example": "createdAt"
+      },
+      "ProjectSortParam": {
+        "name": "sort",
+        "in": "query",
+        "required": false,
+        "description": "The project field to sort by. Defaults to id.",
+        "schema": {
+          "$ref": "#/components/schemas/ProjectSortField"
+        },
+        "example": "name"
+      },
+      "OrderParam": {
+        "name": "order",
+        "in": "query",
+        "required": false,
+        "description": "The sort direction to apply to the sort field. Defaults to asc.",
+        "schema": {
+          "$ref": "#/components/schemas/SortOrder"
+        },
+        "example": "asc"
+      },
+      "FieldsParam": {
+        "name": "fields",
+        "in": "query",
+        "required": false,
+        "description": "A comma-separated list of field names to include in each returned item, for example fields=id,title,status. Omit to receive every field.",
+        "schema": {
+          "$ref": "#/components/schemas/FieldsFilter"
+        },
+        "example": "id,title,status"
+      }
+    },
+    "headers": {
+      "X-RateLimit-Limit": {
+        "description": "The maximum number of requests the caller may make in the current rate-limit window.",
+        "schema": {
+          "type": "integer"
+        },
+        "example": 100
+      },
+      "X-RateLimit-Remaining": {
+        "description": "The number of requests the caller has remaining in the current rate-limit window.",
+        "schema": {
+          "type": "integer"
+        },
+        "example": 97
+      },
+      "Retry-After": {
+        "description": "The number of seconds the caller should wait before retrying the request.",
+        "schema": {
+          "type": "integer"
+        },
+        "example": 30
+      },
+      "Location": {
+        "description": "The absolute URL of the newly created resource.",
+        "schema": {
+          "type": "string",
+          "format": "uri"
+        },
+        "example": "https://api.todo.level250.com/tasks/018f4e3b-9d4c-7a1e-8f2b-3c4d5e6f7a8b"
+      }
+    },
+    "responses": {
+      "BadRequestResponse": {
+        "description": "The request body or query parameters failed validation.",
+        "headers": {
+          "X-RateLimit-Limit": {
+            "$ref": "#/components/headers/X-RateLimit-Limit"
+          },
+          "X-RateLimit-Remaining": {
+            "$ref": "#/components/headers/X-RateLimit-Remaining"
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            },
+            "example": {
+              "type": "https://api.todo.level250.com/problems/validation-error",
+              "title": "Validation error",
+              "status": 400,
+              "detail": "The request body has 1 invalid field.",
+              "instance": "/tasks",
+              "errors": [
+                {
+                  "name": "priority",
+                  "reason": "must be one of: low, medium, high"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "UnauthorizedResponse": {
+        "description": "The request is missing a valid API key.",
+        "headers": {
+          "X-RateLimit-Limit": {
+            "$ref": "#/components/headers/X-RateLimit-Limit"
+          },
+          "X-RateLimit-Remaining": {
+            "$ref": "#/components/headers/X-RateLimit-Remaining"
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            },
+            "example": {
+              "type": "https://api.todo.level250.com/problems/unauthorized",
+              "title": "Unauthorized",
+              "status": 401,
+              "detail": "The Authorization header is missing or the provided API key is invalid.",
+              "instance": "/tasks"
+            }
+          }
+        }
+      },
+      "TaskNotFoundResponse": {
+        "description": "No task exists with the given ID for the authenticated user.",
+        "headers": {
+          "X-RateLimit-Limit": {
+            "$ref": "#/components/headers/X-RateLimit-Limit"
+          },
+          "X-RateLimit-Remaining": {
+            "$ref": "#/components/headers/X-RateLimit-Remaining"
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            },
+            "example": {
+              "type": "https://api.todo.level250.com/problems/not-found",
+              "title": "Task not found",
+              "status": 404,
+              "detail": "No task exists with ID 018f4e3b-9d4c-7a1e-8f2b-3c4d5e6f7a8b.",
+              "instance": "/tasks/018f4e3b-9d4c-7a1e-8f2b-3c4d5e6f7a8b"
+            }
+          }
+        }
+      },
+      "ProjectNotFoundResponse": {
+        "description": "No project exists with the given ID for the authenticated user.",
+        "headers": {
+          "X-RateLimit-Limit": {
+            "$ref": "#/components/headers/X-RateLimit-Limit"
+          },
+          "X-RateLimit-Remaining": {
+            "$ref": "#/components/headers/X-RateLimit-Remaining"
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            },
+            "example": {
+              "type": "https://api.todo.level250.com/problems/not-found",
+              "title": "Project not found",
+              "status": 404,
+              "detail": "No project exists with ID 018f4e2a-7c2b-7c3e-8f1a-2b3c4d5e6f7a.",
+              "instance": "/projects/018f4e2a-7c2b-7c3e-8f1a-2b3c4d5e6f7a"
+            }
+          }
+        }
+      },
+      "ConflictResponse": {
+        "description": "The project cannot be deleted because it still contains tasks.",
+        "headers": {
+          "X-RateLimit-Limit": {
+            "$ref": "#/components/headers/X-RateLimit-Limit"
+          },
+          "X-RateLimit-Remaining": {
+            "$ref": "#/components/headers/X-RateLimit-Remaining"
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            },
+            "example": {
+              "type": "https://api.todo.level250.com/problems/project-has-tasks",
+              "title": "Project has tasks",
+              "status": 409,
+              "detail": "Project 018f4e2a-7c2b-7c3e-8f1a-2b3c4d5e6f7a still has 3 task(s). Delete or move them before deleting the project.",
+              "instance": "/projects/018f4e2a-7c2b-7c3e-8f1a-2b3c4d5e6f7a"
+            }
+          }
+        }
+      },
+      "TooManyRequestsResponse": {
+        "description": "The caller has exceeded the allowed request rate.",
+        "headers": {
+          "X-RateLimit-Limit": {
+            "$ref": "#/components/headers/X-RateLimit-Limit"
+          },
+          "X-RateLimit-Remaining": {
+            "$ref": "#/components/headers/X-RateLimit-Remaining"
+          },
+          "Retry-After": {
+            "$ref": "#/components/headers/Retry-After"
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            },
+            "example": {
+              "type": "https://api.todo.level250.com/problems/rate-limited",
+              "title": "Too many requests",
+              "status": 429,
+              "detail": "The rate limit of 100 requests per minute was exceeded. Retry after 30 seconds.",
+              "instance": "/tasks"
+            }
+          }
+        }
+      },
+      "InternalServerErrorResponse": {
+        "description": "An unexpected error occurred on the server.",
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            },
+            "example": {
+              "type": "https://api.todo.level250.com/problems/internal-server-error",
+              "title": "Internal server error",
+              "status": 500,
+              "detail": "An unexpected error occurred while processing the request. Retry the request; if it keeps failing, contact support.",
+              "instance": "/tasks"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "TaskId": {
+        "type": "string",
+        "format": "uuid",
+        "description": "The unique identifier of a task, a UUIDv7.",
+        "example": "018f4e3b-9d4c-7a1e-8f2b-3c4d5e6f7a8b"
+      },
+      "ProjectId": {
+        "type": "string",
+        "format": "uuid",
+        "description": "The unique identifier of a project, a UUIDv7.",
+        "example": "018f4e2a-7c2b-7c3e-8f1a-2b3c4d5e6f7a"
+      },
+      "Priority": {
+        "type": "string",
+        "enum": [
+          "low",
+          "medium",
+          "high"
+        ],
+        "description": "How urgently a task needs attention. Consumers should tolerate unrecognized values, since new levels may be added over time.",
+        "example": "medium"
+      },
+      "TaskStatus": {
+        "type": "string",
+        "enum": [
+          "open",
+          "completed"
+        ],
+        "description": "Whether a task is still outstanding or has been marked done. Consumers should tolerate unrecognized values, since new statuses may be added over time.",
+        "example": "open"
+      },
+      "SortOrder": {
+        "type": "string",
+        "enum": [
+          "asc",
+          "desc"
+        ],
+        "description": "The direction to sort results in.",
+        "example": "asc"
+      },
+      "TaskSortField": {
+        "type": "string",
+        "enum": [
+          "createdAt",
+          "dueDate",
+          "priority",
+          "title"
+        ],
+        "description": "The task field a task list may be sorted by.",
+        "example": "createdAt"
+      },
+      "ProjectSortField": {
+        "type": "string",
+        "enum": [
+          "id",
+          "name"
+        ],
+        "description": "The project field a project list may be sorted by.",
+        "example": "name"
+      },
+      "Offset": {
+        "type": "integer",
+        "minimum": 0,
+        "default": 0,
+        "description": "The number of items to skip for offset-based pagination.",
+        "example": 0
+      },
+      "Limit": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 1000,
+        "default": 50,
+        "description": "The maximum number of items to return in one page. Values above 1000 are clamped to 1000.",
+        "example": 50
+      },
+      "FieldsFilter": {
+        "type": "string",
+        "description": "A comma-separated list of field names to include in each returned item.",
+        "example": "id,title,status"
+      },
+      "Task": {
+        "type": "object",
+        "description": "A single to-do item belonging to exactly one project.",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/TaskId"
+          },
+          "title": {
+            "type": "string",
+            "description": "The task's title.",
+            "example": "Write API proposal"
+          },
+          "description": {
+            "type": "string",
+            "description": "Additional detail about the task. Omitted when not set.",
+            "example": "Draft the v1 proposal and share with the team for review"
+          },
+          "priority": {
+            "$ref": "#/components/schemas/Priority"
+          },
+          "status": {
+            "$ref": "#/components/schemas/TaskStatus"
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date",
+            "description": "The calendar date the task is due. Omitted when not set.",
+            "example": "2026-09-05"
+          },
+          "projectId": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProjectId"
+              }
+            ],
+            "description": "The ID of the project this task belongs to."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the task was created.",
+            "example": "2026-08-15T09:30:00Z"
+          },
+          "completedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "When the task was marked complete. Explicitly null after a completed task is reopened, and omitted for a task that has never been completed.",
+            "example": null
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "priority",
+          "status",
+          "projectId",
+          "createdAt"
+        ]
+      },
+      "Project": {
+        "type": "object",
+        "description": "A logical grouping of tasks, such as \"Work\" or \"Home\".",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/ProjectId"
+          },
+          "name": {
+            "type": "string",
+            "description": "The project's name.",
+            "example": "Work"
+          },
+          "description": {
+            "type": "string",
+            "description": "Additional detail about the project. Omitted when not set.",
+            "example": "Tasks related to my day job"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "TaskCreateRequest": {
+        "type": "object",
+        "description": "The fields accepted to create a new task. Only title and projectId are required.",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "The task's title.",
+            "example": "Write API proposal"
+          },
+          "description": {
+            "type": "string",
+            "description": "Additional detail about the task.",
+            "example": "Draft the v1 proposal and share with the team for review"
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date",
+            "description": "The calendar date the task is due.",
+            "example": "2026-09-05"
+          },
+          "priority": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Priority"
+              }
+            ],
+            "description": "How urgently the task needs attention. Defaults to medium when omitted."
+          },
+          "projectId": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProjectId"
+              }
+            ],
+            "description": "The ID of the project this task belongs to. Must reference an existing project."
+          }
+        },
+        "required": [
+          "title",
+          "projectId"
+        ]
+      },
+      "TaskUpdateRequest": {
+        "type": "object",
+        "description": "The full replacement representation of a task, including toggling status between open and completed. Fields omitted from the request are cleared, not left unchanged.",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "The task's title.",
+            "example": "Write API proposal"
+          },
+          "description": {
+            "type": "string",
+            "description": "Additional detail about the task.",
+            "example": "Draft the v1 proposal and share with the team for review"
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date",
+            "description": "The calendar date the task is due.",
+            "example": "2026-09-05"
+          },
+          "priority": {
+            "$ref": "#/components/schemas/Priority"
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TaskStatus"
+              }
+            ],
+            "description": "Set to completed to mark the task done, or open to reopen it."
+          },
+          "projectId": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProjectId"
+              }
+            ],
+            "description": "The ID of the project this task belongs to. Must reference an existing project."
+          }
+        },
+        "required": [
+          "title",
+          "priority",
+          "status",
+          "projectId"
+        ]
+      },
+      "ProjectCreateRequest": {
+        "type": "object",
+        "description": "The fields accepted to create a new project. Only name is required.",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The project's name.",
+            "example": "Work"
+          },
+          "description": {
+            "type": "string",
+            "description": "Additional detail about the project.",
+            "example": "Tasks related to my day job"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "ProjectUpdateRequest": {
+        "type": "object",
+        "description": "The full replacement representation of a project. Fields omitted from the request are cleared, not left unchanged.",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The project's name.",
+            "example": "Work"
+          },
+          "description": {
+            "type": "string",
+            "description": "Additional detail about the project.",
+            "example": "Tasks related to my day job"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "CollectionMeta": {
+        "type": "object",
+        "description": "Pagination metadata accompanying a collection response.",
+        "properties": {
+          "totalCount": {
+            "type": "integer",
+            "description": "The total number of items matching the request, across all pages.",
+            "example": 77
+          },
+          "limit": {
+            "type": "integer",
+            "description": "The page size used for this response.",
+            "example": 50
+          },
+          "offset": {
+            "type": "integer",
+            "description": "The number of items skipped before this page.",
+            "example": 0
+          }
+        },
+        "required": [
+          "totalCount",
+          "limit",
+          "offset"
+        ]
+      },
+      "TaskCollection": {
+        "type": "object",
+        "description": "A paginated collection of tasks.",
+        "properties": {
+          "data": {
+            "type": "array",
+            "description": "The tasks on this page.",
+            "items": {
+              "$ref": "#/components/schemas/Task"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/CollectionMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "example": {
+          "data": [
+            {
+              "id": "018f4e3b-9d4c-7a1e-8f2b-3c4d5e6f7a8b",
+              "title": "Write API proposal",
+              "description": "Draft the v1 proposal and share with the team for review",
+              "priority": "medium",
+              "status": "open",
+              "dueDate": "2026-09-05",
+              "projectId": "018f4e2a-7c2b-7c3e-8f1a-2b3c4d5e6f7a",
+              "createdAt": "2026-08-15T09:30:00Z"
+            },
+            {
+              "id": "018f4e3c-1a2b-7c3d-9e4f-5a6b7c8d9e0f",
+              "title": "Review pull requests",
+              "priority": "low",
+              "status": "completed",
+              "projectId": "018f4e2a-7c2b-7c3e-8f1a-2b3c4d5e6f7a",
+              "createdAt": "2026-08-10T08:00:00Z",
+              "completedAt": "2026-08-20T14:45:00Z"
+            }
+          ],
+          "meta": {
+            "totalCount": 2,
+            "limit": 50,
+            "offset": 0
+          }
+        }
+      },
+      "ProjectCollection": {
+        "type": "object",
+        "description": "A paginated collection of projects.",
+        "properties": {
+          "data": {
+            "type": "array",
+            "description": "The projects on this page.",
+            "items": {
+              "$ref": "#/components/schemas/Project"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/CollectionMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "example": {
+          "data": [
+            {
+              "id": "018f4e2a-7c2b-7c3e-8f1a-2b3c4d5e6f7a",
+              "name": "Work",
+              "description": "Tasks related to my day job"
+            },
+            {
+              "id": "018f4e2b-8d3c-7f4a-9b1e-4c5d6e7f8a9b",
+              "name": "Home"
+            }
+          ],
+          "meta": {
+            "totalCount": 2,
+            "limit": 50,
+            "offset": 0
+          }
+        }
+      },
+      "ValidationErrorItem": {
+        "type": "object",
+        "description": "A single field-level validation failure.",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The name of the offending field.",
+            "example": "priority"
+          },
+          "reason": {
+            "type": "string",
+            "description": "Why the field failed validation.",
+            "example": "must be one of: low, medium, high"
+          }
+        },
+        "required": [
+          "name",
+          "reason"
+        ]
+      },
+      "Problem": {
+        "type": "object",
+        "description": "An RFC 9457 Problem Details error response.",
+        "properties": {
+          "type": {
+            "type": "string",
+            "format": "uri",
+            "description": "A URI identifying the error class. This is the machine-readable identifier for the error.",
+            "example": "https://api.todo.level250.com/problems/validation-error"
+          },
+          "title": {
+            "type": "string",
+            "description": "A short, stable summary of the error class.",
+            "example": "Validation error"
+          },
+          "status": {
+            "type": "integer",
+            "description": "The HTTP status code, matching the response status.",
+            "example": 400
+          },
+          "detail": {
+            "type": "string",
+            "description": "What went wrong in this specific occurrence.",
+            "example": "The request body has 1 invalid field."
+          },
+          "instance": {
+            "type": "string",
+            "description": "A URI reference identifying this specific occurrence, commonly the request path.",
+            "example": "/tasks"
+          },
+          "errors": {
+            "type": "array",
+            "description": "Field-level validation failures. Present only for validation errors.",
+            "items": {
+              "$ref": "#/components/schemas/ValidationErrorItem"
+            }
+          }
+        },
+        "required": [
+          "type",
+          "title",
+          "status",
+          "detail",
+          "instance"
+        ]
+      }
+    }
+  }
+}
