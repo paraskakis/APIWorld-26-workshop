@@ -42,6 +42,21 @@ Do not implement persistence, logging, analytics, or caching unless specifically
 Also create a simple React web page at the root that serves as an API reference, showing all endpoints with their HTTP methods and descriptions.
 ```
 
+### Test your API in Claude Codde or Codex
+```
+Read my API spec at `xyz.json` to understand how it works. Use any non-empty string as an API Key for testing.
+Go through all your resources, for each do:
+GET a collection
+POST an item to the collection, inspect the response
+GET the collection and observe the item in list
+PUT to the item with its ID to change a property
+GET the item by its ID and observe changes
+DELETE the item by its ID
+DELETE the item by its ID again and observe a 404
+GET the item by its ID and observe a 404
+GET the collection and observe the item is missing
+```
+
 ## License
 
 MIT
