@@ -1,15 +1,15 @@
 # API World 2026 Master Workshop: Build AI-Ready APIs
 
 ## Setup
-### Agents
+### 1. Agents
 Use [Claude Code](https://code.claude.com/docs/en/quickstart) or [Codex](https://developers.openai.com/codex/cli) for API Design
 (Cowork will also work without linting, or even just any LLM)
 
-### Skills
+### 2. Skills
 Run `npx skills add paraskakis/skills`
 Or point your agent to the [Skills repository](https://github.com/paraskakis/skills)
 
-### RateMyOpenAPI Setup
+### 3. RateMyOpenAPI Setup
 1. Open https://docs.ratemyopenapi.com
 2. Click "Pricing" in the top-right, then sign up for a free account
 3. Click your profile name (top right) → "Subscription"
@@ -17,7 +17,7 @@ Or point your agent to the [Skills repository](https://github.com/paraskakis/ski
 5. In terminal type `echo 'export RMOA_API_KEY=your-key-here' >> ~/.zshrc`
 and `source ~/.zshrc`
 
-### Linting & Rating tools
+### 4. Linting & Scoring tools
 Free: [Swagger Editor](https://editor-next.swagger.io/)
 (Or any editor that supports OpenAPI 3.1.0)
 
@@ -28,26 +28,26 @@ Free: [RateMyOpenAPI](https://ratemyopenapi.com/)
 Free: [API Doctor](https://pb33f.io/doctor/)
 (Supports Rule Customization)
 
-### Mock API and Documentation
+### 5. Mock API and Documentation
 Free: [Mockbin](https://mockbin.io/)
 (After the bin is generated you can see documentation)
 
-### API Implementation & Hosting
+### 6. API Implementation & Hosting
 Free: [Replit](https://replit.com/)
 (Keep projects simple or you may run out of credits)
 
-### API Client
+### 7. API Client
 Free: [HTTPie](https://httpie.io/app)
 (Web, Desktop or CLI)
 
 Or use your favorite API Client such as Postman, Bruno, cURL
 
-### Repository - this file
+### 8. Repository - this file
 https://github.com/paraskakis/APIWorld-26-workshop
 
 You'll find the requirements and standards files here.
 
-### Next steps
+### 9. Next steps
 - Connect with [Emmanuel Paraskakis](https://www.linkedin.com/in/emmanuelparaskakis/)
 - Check out more courses, workshops and free lessons on [Maven](https://maven.com/emmanuel)
 - The [AI-ready API Checklist](https://tinyurl.com/AIReadyAPI)
