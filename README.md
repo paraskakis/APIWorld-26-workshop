@@ -1,34 +1,53 @@
-## Zuplo API
+# API World 2026 Master Workshop: Build AI-Ready APIs
 
-This is a Zuplo API that was created with
-[`create-zuplo-api`](https://zuplo.com/docs).
+## Setup
+### Agents
+Use [Claude Code](https://code.claude.com/docs/en/quickstart) or [Codex](https://developers.openai.com/codex/cli) for API Design
+(Cowork will also work without linting, or even just any LLM)
 
-## Getting Started
+### Skills
+Run `npx skills add paraskakis/skills`
+Or point your agent to the [Skills repository](https://github.com/paraskakis/skills)
 
-First, run the development server:
+### RateMyOpenAPI Setup
+1. Open https://docs.ratemyopenapi.com
+2. Click "Pricing" in the top-right, then sign up for a free account
+3. Click your profile name (top right) → "Subscription"
+4. Scroll down for your API Key
+5. In terminal type `echo 'export RMOA_API_KEY=your-key-here' >> ~/.zshrc`
+and `source ~/.zshrc`
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-```
+### Linting & Rating tools
+Free: [Swagger Editor](https://editor-next.swagger.io/)
+(Or any editor that supports OpenAPI 3.1.0)
 
-Open [http://localhost:9000](http://localhost:9000) with your browser to see the
-result.
+Optional: [JSON Editor](https://www.online-json.com/json-editor)
 
-You can start editing the API by modifying `config/routes.oas.json`. The dev
-server will automatically reload the API with your changes.
+Free: [RateMyOpenAPI](https://ratemyopenapi.com/)
 
-## Debugging
+Free: [API Doctor](https://pb33f.io/doctor/)
+(Supports Rule Customization)
 
-To set breakpoints and attach a debugger to your local gateway, see the
-[debugging guide](https://zuplo.com/docs/articles/local-development-debugging).
+### Mock API and Documentation
+Free: [Mockbin](https://mockbin.io/)
+(After the bin is generated you can see documentation)
 
-## Learn More
+### API Implementation & Hosting
+Free: [Replit](https://replit.com/)
+(Keep projects simple or you may run out of credits)
 
-To learn more about Zuplo, you can visit the
-[Zuplo documentation](https://zuplo.com/docs).
+### API Client
+Free: [HTTPie](https://httpie.io/app)
+(Web, Desktop or CLI)
 
-To connect with the community join [Discord](https://discord.zuplo.com).
+Or use your favorite API Client such as Postman, Bruno, cURL
+
+### Repository - this file
+https://github.com/paraskakis/APIWorld-26-workshop
+
+You'll find the requirements and standards files here.
+
+### Next steps
+- Connect with [Emmanuel Paraskakis](https://www.linkedin.com/in/emmanuelparaskakis/)
+- Check out more courses, workshops and free lessons on [Maven](https://maven.com/emmanuel)
+- The [AI-ready API Checklist](https://tinyurl.com/AIReadyAPI)
