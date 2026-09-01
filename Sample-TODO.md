@@ -42,7 +42,7 @@ Do not implement persistence, logging, analytics, or caching unless specifically
 Also create a simple React web page at the root that serves as an API reference, showing all endpoints with their HTTP methods and descriptions.
 ```
 
-### Test your API in Claude Codde or Codex
+### Test your API in Claude Code or Codex
 ```
 Read my API spec at `xyz.json` to understand how it works. Use any non-empty string as an API Key for testing.
 Go through all your resources, for each do:
