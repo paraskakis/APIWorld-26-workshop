@@ -42,8 +42,9 @@ Free: [HTTPie](https://httpie.io/app)
 
 Or use your favorite API Client such as Postman, Bruno, cURL
 
-### 8. Repository - this file
+### 8. Repository - where this file lives
 https://github.com/paraskakis/APIWorld-26-workshop
+See `Sample-TODO.md` for details of the sample project
 
 You'll find the requirements and standards files here.
 
