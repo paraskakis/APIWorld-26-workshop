@@ -50,5 +50,6 @@ You'll find the requirements and standards files here.
 
 ### 9. Next steps
 - Connect with [Emmanuel Paraskakis](https://www.linkedin.com/in/emmanuelparaskakis/)
+- The [full slide deck](https://tinyurl.com/APIWorldWorkshop) from the workshop
 - Check out more courses, workshops and free lessons on [Maven](https://maven.com/emmanuel)
 - The [AI-ready API Checklist](https://tinyurl.com/AIReadyAPI)
